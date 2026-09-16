@@ -1,8 +1,32 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { useEffect } from 'react'
+import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import { Toaster } from 'sonner'
 import { Publico } from './paginas/Publico'
 import { Admin } from './paginas/Admin'
-import { supabaseConfigurado } from './lib/supabase'
+import { NuevaContrasena } from './paginas/NuevaContrasena'
+import { supabase, supabaseConfigurado } from './lib/supabase'
+
+/**
+ * Los enlaces de recuperación que Supabase envía apuntan a la dirección
+ * configurada como Site URL, que normalmente es la raíz del sitio y no la
+ * pantalla de contraseña. Al canjear el token, supabase-js avisa con el
+ * evento PASSWORD_RECOVERY; aquí lo escuchamos desde cualquier ruta y
+ * llevamos al usuario a donde puede elegir su contraseña.
+ */
+function RedirigirRecuperacion() {
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const { data: sub } = supabase.auth.onAuthStateChange((evento) => {
+      if (evento === 'PASSWORD_RECOVERY') {
+        navigate('/nueva-contrasena', { replace: true })
+      }
+    })
+    return () => sub.subscription.unsubscribe()
+  }, [navigate])
+
+  return null
+}
 
 export default function App() {
   if (!supabaseConfigurado) {
@@ -23,10 +47,12 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <RedirigirRecuperacion />
       <Routes>
         <Route path="/" element={<Publico />} />
         <Route path="/parque/:id" element={<Publico />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/nueva-contrasena" element={<NuevaContrasena />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <Toaster position="top-center" richColors closeButton />

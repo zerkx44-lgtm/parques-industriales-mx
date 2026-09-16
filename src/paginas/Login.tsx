@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
+import { toast } from 'sonner'
 import { supabase } from '../lib/supabase'
 import { Encabezado } from '../componentes/Encabezado'
 
@@ -9,6 +10,26 @@ export function Login() {
   const [contrasena, setContrasena] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [enviando, setEnviando] = useState(false)
+  const [recuperando, setRecuperando] = useState(false)
+
+  /**
+   * Manda el correo con el enlace para elegir contraseña nueva.
+   * No revelamos si el correo existe o no: siempre se responde igual,
+   * para que nadie pueda averiguar qué cuentas están dadas de alta.
+   */
+  const recuperar = async () => {
+    if (!correo.trim()) {
+      setError('Escribe tu correo arriba y vuelve a tocar el enlace.')
+      return
+    }
+    setRecuperando(true)
+    setError(null)
+    await supabase.auth.resetPasswordForEmail(correo.trim(), {
+      redirectTo: `${window.location.origin}/nueva-contrasena`,
+    })
+    setRecuperando(false)
+    toast.success('Si ese correo tiene cuenta, va en camino el enlace para cambiar la contraseña.')
+  }
 
   const entrar = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -78,6 +99,15 @@ export function Login() {
 
           <button type="submit" disabled={enviando} className="btn-primario w-full">
             {enviando ? 'Entrando…' : 'Entrar'}
+          </button>
+
+          <button
+            type="button"
+            onClick={recuperar}
+            disabled={recuperando}
+            className="w-full text-center text-xs font-semibold text-acero-600 underline underline-offset-2 hover:text-ambar disabled:opacity-50 dark:text-acero-400"
+          >
+            {recuperando ? 'Enviando…' : '¿Olvidaste tu contraseña?'}
           </button>
         </motion.form>
       </main>
