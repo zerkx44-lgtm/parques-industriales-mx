@@ -207,3 +207,7 @@ despliegue/
   crece mucho conviene pasar a un proveedor de mosaicos con plan propio.
 - La app respeta `prefers-reduced-motion`: si el sistema pide menos animación,
   las transiciones se desactivan.
+
+---
+
+Desplegado automáticamente en Vercel con cada push a `main`.
