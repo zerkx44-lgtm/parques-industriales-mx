@@ -1,0 +1,103 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+@import "react-leaflet-cluster/dist/assets/MarkerCluster.css";
+
+/* El modo oscuro se activa con la clase .oscuro en <html>, que ponemos
+   desde React según la preferencia del sistema o la elección del usuario. */
+@custom-variant dark (&:where(.oscuro, .oscuro *));
+
+@theme {
+  --font-sans: 'Archivo', ui-sans-serif, system-ui, sans-serif;
+
+  --color-acero-950: #0E1720;
+  --color-acero-900: #14202C;
+  --color-acero-800: #1B2A3A;
+  --color-acero-700: #2A3D52;
+  --color-acero-600: #3D5670;
+  --color-acero-400: #7E93A8;
+  --color-acero-200: #C3CED9;
+  --color-humo: #EEF1F3;
+  --color-ambar: #F2B705;
+
+  --color-automotriz: #2F6FDE;
+  --color-logistica: #0E9F6E;
+  --color-manufactura: #C2410C;
+  --color-aeroespacial: #7C3AED;
+  --color-electronica: #DB2777;
+}
+
+@layer base {
+  html { -webkit-tap-highlight-color: transparent; }
+  body {
+    @apply bg-humo text-acero-800 font-sans antialiased;
+    @apply dark:bg-acero-950 dark:text-acero-200;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ambar;
+  }
+  /* Respeta la preferencia del sistema de reducir animaciones. */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  .tarjeta {
+    @apply bg-white dark:bg-acero-900 rounded-xl border border-acero-200/70 dark:border-acero-700;
+  }
+  .campo {
+    @apply w-full rounded-lg border border-acero-200 dark:border-acero-700 bg-white dark:bg-acero-900
+           px-3 py-2 text-sm text-acero-800 dark:text-acero-200
+           placeholder:text-acero-400 focus:border-ambar focus:outline-none;
+  }
+  /* Base compartida de todos los botones. En Tailwind v4 no se puede
+     hacer @apply de una clase de componente propia, por eso la base se
+     repite con :is(...) en lugar de encadenar clases. */
+  .btn, .btn-primario, .btn-ambar, .btn-fantasma, .btn-peligro {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold
+           transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-primario { @apply bg-acero-800 text-white hover:bg-acero-700 dark:bg-ambar dark:text-acero-950 dark:hover:bg-ambar/90; }
+  .btn-ambar    { @apply bg-ambar text-acero-950 hover:brightness-95; }
+  .btn-fantasma { @apply border border-acero-200 dark:border-acero-700 hover:bg-acero-200/40 dark:hover:bg-acero-800; }
+  .btn-peligro  { @apply bg-red-600 text-white hover:bg-red-700; }
+}
+
+/* ---- Ajustes de Leaflet ---- */
+.leaflet-container { background: #dfe5ea; font-family: 'Archivo', sans-serif; }
+.oscuro .leaflet-container { background: #0E1720; }
+/* Los mosaicos de OSM son claros; en modo oscuro los atenuamos. */
+.oscuro .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.9); }
+.leaflet-control-attribution { font-size: 10px; }
+
+.marcador-parque { background: none; border: none; }
+.marcador-pin {
+  width: 26px; height: 26px; border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  border: 2px solid white;
+  box-shadow: 0 2px 6px rgba(0,0,0,.35);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.marcador-parque.activo .marcador-pin {
+  transform: rotate(-45deg) scale(1.35);
+  box-shadow: 0 0 0 6px rgba(242,183,5,.35), 0 3px 10px rgba(0,0,0,.4);
+  animation: pulso 1.6s ease-in-out infinite;
+}
+@keyframes pulso {
+  0%,100% { box-shadow: 0 0 0 5px rgba(242,183,5,.30), 0 3px 10px rgba(0,0,0,.4); }
+  50%     { box-shadow: 0 0 0 11px rgba(242,183,5,0), 0 3px 10px rgba(0,0,0,.4); }
+}
+
+.grupo-marcadores {
+  background: #1B2A3A; color: #fff; border: 2px solid #F2B705;
+  border-radius: 999px; display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 13px; box-shadow: 0 2px 8px rgba(0,0,0,.3);
+}
+
+/* Barra de desplazamiento discreta */
+.scroll-fino::-webkit-scrollbar { width: 8px; }
+.scroll-fino::-webkit-scrollbar-thumb { background: #C3CED9; border-radius: 99px; }
+.oscuro .scroll-fino::-webkit-scrollbar-thumb { background: #2A3D52; }
